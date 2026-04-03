@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class DatabaseConnection {
 
     // Connection parameters
-    private static final String URL = "jdbc:mysql://localhost:3306/cinema_db";
+    private static final String URL = "jdbc:mysql://localhost:3306/cinema_db"; // replace with your URL
     private static final String USER = "cinemadb"; // replace with your username
     private static final String PASSWORD = "yourpassword"; // replace with your password
 
