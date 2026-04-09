@@ -1,9 +1,16 @@
+// Package declaration
 package cinema;
 
+// Import necessary libraries for and Database (SQL) and Date
+import cinema.database.DatabaseConnection;
 import java.util.Date;
-
 import java.sql.*;
 
+/**
+ * InputValidator utility class.
+ * Note: Changed from 'extends Exception' to a standard class,
+ * as it contains static utility methods rather than being an exception itself.
+ */
 public class InputValidator {
 
     // Validate if a string can be parsed as a positive integer
