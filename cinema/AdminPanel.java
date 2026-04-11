@@ -27,5 +27,14 @@ public class AdminPanel extends JFrame {
 
         // Add the tabbedPane to the frame
         add(tabbedPane, BorderLayout.CENTER);  // Main content in the center
+        
+        
+    public static void main(String[] args) {
+        // Create and display the AdminPanel when the program starts
+        SwingUtilities.invokeLater(() -> {
+            AdminPanel adminPanel = new AdminPanel();
+            adminPanel.setVisible(true);  // Make the window visible
+        });
+    }
     }
 }
