@@ -1,5 +1,7 @@
+// Define the package name for the cinema application
 package cinema;
 
+// Import necessary Java Swing and AWT classes for the GUI
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -9,224 +11,165 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * WatchShowtimesPage class represents a window that displays available
+ * screening times for a specific movie selected by the user.
+ */
 public class WatchShowtimesPage extends JFrame {
 
-    private JPanel showtimeContainer;
+    // Unique identifier for the selected movie
     private final int movieId;
 
-    // Modern Color Palette
-    private final Color BACKGROUND_COLOR = new Color(245, 247, 250);
+    // UI Constants for consistent styling (Colors)
+    private final Color BACKGROUND_COLOR = new Color(240, 240, 240);
     private final Color NAV_BAR_COLOR = new Color(18, 18, 18);
-    private final Color ACCENT_BLUE = new Color(0, 122, 255);
-    private final Color TEXT_DARK = new Color(33, 33, 33);
-    private final Color TEXT_GRAY = new Color(110, 110, 110);
+    private static final Color PRIMARY_BLUE = new Color(34, 150, 243);
 
+    /**
+     * Constructor for the Showtimes Page.
+     * Initializes the frame and builds the user interface.
+     */
     public WatchShowtimesPage(int movieId) {
         this.movieId = movieId;
-        setupFrame();
 
-        // Navigation Bar
-        add(createNavbar(), BorderLayout.NORTH);
-
-        // Main Content (Scrollable)
-        JPanel contentWrapper = new JPanel();
-        contentWrapper.setLayout(new BoxLayout(contentWrapper, BoxLayout.Y_AXIS));
-        contentWrapper.setBackground(BACKGROUND_COLOR);
-
-        Movie movie = getMovieDetails(movieId);
-        if (movie != null) {
-            contentWrapper.add(createEnhancedMovieHeader(movie));
-        }
-
-        // --- SECTION TITLE ---
-        JLabel sectionTitle = new JLabel("Available Showtimes");
-        sectionTitle.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        sectionTitle.setForeground(TEXT_DARK);
-
-        // Key Fix: Set alignment and wrap in a FlowLayout(Left) panel to prevent centering
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        titlePanel.setBackground(BACKGROUND_COLOR);
-        titlePanel.setBorder(new EmptyBorder(30, 35, 10, 40));
-        titlePanel.add(sectionTitle);
-        titlePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        contentWrapper.add(titlePanel);
-
-        // --- SHOWTIMES CONTAINER ---
-        showtimeContainer = new JPanel();
-        showtimeContainer.setLayout(new BoxLayout(showtimeContainer, BoxLayout.Y_AXIS));
-        showtimeContainer.setBackground(BACKGROUND_COLOR);
-        showtimeContainer.setBorder(new EmptyBorder(10, 40, 40, 40));
-        showtimeContainer.setAlignmentX(Component.LEFT_ALIGNMENT); // Keep container to the left
-
-        List<Showtime> showtimes = getShowtimesForMovie(movieId);
-        if (showtimes.isEmpty()) {
-            JLabel emptyLabel = new JLabel("No showtimes available for this movie yet.");
-            emptyLabel.setFont(new Font("Segoe UI", Font.ITALIC, 14));
-            showtimeContainer.add(emptyLabel);
-        } else {
-            for (Showtime s : showtimes) {
-                showtimeContainer.add(createModernShowtimeCard(s));
-                showtimeContainer.add(Box.createRigidArea(new Dimension(0, 15)));
-            }
-        }
-
-        contentWrapper.add(showtimeContainer);
-
-        JScrollPane scrollPane = new JScrollPane(contentWrapper);
-        scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        add(scrollPane, BorderLayout.CENTER);
-
-        setVisible(true);
-    }
-
-    private void setupFrame() {
-        setTitle("Showtimes - " + movieId);
-        setSize(1100, 805);
+        // Window basic configuration
+        setTitle("Movie Showtimes");
+        setSize(1300, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-    }
 
-    private JPanel createNavbar() {
-        JPanel nav = new JPanel(new BorderLayout());
-        nav.setBackground(NAV_BAR_COLOR);
-        nav.setPreferredSize(new Dimension(getWidth(), 45));
-        nav.setBorder(new EmptyBorder(0, 20, 0, 20));
+        // --- 1. Black Top Navigation Bar ---
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.setBackground(NAV_BAR_COLOR);
+        topPanel.setPreferredSize(new Dimension(getWidth(), 35));
 
+        // Create and configure the back button
         JButton backBtn = new JButton("← Back to Movies");
         backBtn.setForeground(Color.WHITE);
         backBtn.setBackground(NAV_BAR_COLOR);
-        backBtn.setFocusPainted(false);
         backBtn.setBorderPainted(false);
+        backBtn.setFocusPainted(false);
         backBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        backBtn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         backBtn.addActionListener(e -> backToMovies());
+        topPanel.add(backBtn);
 
-        nav.add(backBtn, BorderLayout.WEST);
-        return nav;
+        // Add navbar to the top of the frame
+        add(topPanel, BorderLayout.NORTH);
+
+        // --- 2. Content Container ---
+        JPanel mainContent = new JPanel();
+        mainContent.setLayout(new BoxLayout(mainContent, BoxLayout.Y_AXIS));
+        mainContent.setBackground(BACKGROUND_COLOR);
+        mainContent.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        // Fetch movie details from database and add header if data exists
+        Movie movie = getMovieDetails(movieId);
+        if (movie != null) {
+            mainContent.add(createSimpleHeader(movie));
+            mainContent.add(Box.createRigidArea(new Dimension(0, 20))); // Vertical spacing
+        }
+
+        // --- 3. Showtimes List ---
+        // Fetch list of screenings for this movie
+        List<Showtime> showtimes = getShowtimesForMovie(movieId);
+        if (showtimes.isEmpty()) {
+            // Display message if no screenings are scheduled
+            mainContent.add(new JLabel("No showtimes available."));
+        } else {
+            // Loop through each showtime and add a row to the UI
+            for (Showtime s : showtimes) {
+                mainContent.add(createSimpleShowtimeRow(s));
+                mainContent.add(Box.createRigidArea(new Dimension(0, 15))); // Spacing between rows
+            }
+        }
+
+        // Add the content inside a scroll pane for long lists
+        add(new JScrollPane(mainContent), BorderLayout.CENTER);
     }
 
-    private JPanel createEnhancedMovieHeader(Movie movie) {
-        JPanel header = new JPanel(new GridBagLayout());
-        header.setBackground(Color.WHITE);
-        header.setBorder(new EmptyBorder(30, 40, 30, 40));
-        header.setAlignmentX(Component.LEFT_ALIGNMENT); // Ensure header stays left
+    /**
+     * Creates a header panel displaying the movie poster, title, and metadata.
+     */
+    private JPanel createSimpleHeader(Movie movie) {
+        JPanel header = new JPanel(new BorderLayout(20, 0));
+        header.setOpaque(false); // Make transparent to show background
+        header.setMaximumSize(new Dimension(1000, 200));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST; // Anchor components to the West
-        gbc.fill = GridBagConstraints.NONE;
+        // Load and display movie poster
+        JLabel poster = new JLabel(loadImage(movie.getImagePath()));
+        header.add(poster, BorderLayout.WEST);
 
-        // Poster Image
-        JLabel posterLabel = new JLabel(loadImage(movie.getImagePath()));
-        posterLabel.setBorder(new LineBorder(new Color(230, 230, 230), 1));
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridheight = 2;
-        header.add(posterLabel, gbc);
+        // Text information panel
+        JPanel info = new JPanel(new GridLayout(3, 1));
+        info.setOpaque(false);
 
-        // Movie Details Panel
-        JPanel details = new JPanel();
-        details.setLayout(new BoxLayout(details, BoxLayout.Y_AXIS));  // Vertical stacking of components
-        details.setOpaque(false);
-        details.setBorder(new EmptyBorder(0, 30, 0, 0));  // Ensure no padding is causing clipping
-
-// Movie Title
+        // Title styling
         JLabel title = new JLabel(movie.getTitle());
-        title.setFont(new Font("Segoe UI", Font.BOLD, 36));  // Ensure consistent font size
-        title.setAlignmentX(Component.LEFT_ALIGNMENT);  // Align title to the left
+        title.setFont(new Font("SansSerif", Font.BOLD, 20));
 
-// Set the preferred size of the title if needed
-        title.setPreferredSize(new Dimension(600, 50));  // Adjust the height for enough space
+        // Metadata: Rating, Duration, and Release Date
+        JLabel meta = new JLabel(String.format("⭐ %.1f | %d min | %s",
+                movie.getRating(), movie.getDuration(), movie.getReleaseDate()));
+        meta.setFont(new Font("SansSerif", Font.BOLD, 18));
 
-// Add title to the details panel
-        details.add(title);
-        details.add(Box.createRigidArea(new Dimension(0, 8)));  // Space between title and meta
-
-
-
-        // Replace normal hyphens with non-breaking hyphens
-        String releaseDate = movie.getReleaseDate().replace("-", "\u2011"); // Unicode non-breaking hyphen
-
-// Build meta string with non-breaking spaces around emojis and separators
-        String metaText = String.format("<html>⭐ %.1f  •  🕒 %d min  •  📅 %s  </html>",
-                movie.getRating(),
-                movie.getDuration(),
-                releaseDate);
-
-// Replace normal spaces with non-breaking spaces to prevent line breaks
-        metaText = metaText.replace(" ", "\u00A0"); // Unicode non-breaking space
-
-        JLabel meta = new JLabel(metaText);
-        meta.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        meta.setForeground(TEXT_GRAY);
-        meta.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-
-
-
+        // Description area with word wrapping
         JTextArea desc = new JTextArea(movie.getDescription());
-        desc.setFont(new Font("Segoe UI", Font.PLAIN, 15));
-        desc.setLineWrap(true);
+        desc.setFont(new Font("SansSerif", Font.PLAIN, 16));
         desc.setWrapStyleWord(true);
+        desc.setLineWrap(true);
         desc.setEditable(false);
-        desc.setForeground(new Color(80, 80, 80));
-        desc.setMaximumSize(new Dimension(600, 100));
-        desc.setAlignmentX(Component.LEFT_ALIGNMENT);
+        desc.setOpaque(false);
 
-        details.add(title);
-        details.add(Box.createRigidArea(new Dimension(0, 8)));
-        details.add(meta);
-        details.add(Box.createRigidArea(new Dimension(0, 15)));
-        details.add(desc);
+        // Assemble the info panel
+        info.add(title);
+        info.add(meta);
+        info.add(desc);
 
-        gbc.gridx = 1; gbc.gridy = 0; gbc.gridheight = 1; gbc.weightx = 1.0;
-        header.add(details, gbc);
-
+        header.add(info, BorderLayout.CENTER);
         return header;
     }
 
-    private JPanel createModernShowtimeCard(Showtime showtime) {
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        // Important: Use a larger MaximumSize or don't set it to ensure it stretches
-        card.setMaximumSize(new Dimension(1000, 100));
-        card.setAlignmentX(Component.LEFT_ALIGNMENT);
-        card.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(230, 230, 230), 1, true),
-                new EmptyBorder(20, 25, 20, 25)
-        ));
+    /**
+     * Creates a row for a single showtime including time, price, and selection button.
+     */
+    private JPanel createSimpleShowtimeRow(Showtime s) {
+        JPanel row = new JPanel(new BorderLayout(15, 0));
+        row.setBackground(Color.WHITE);
+        row.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(Color.LIGHT_GRAY), new EmptyBorder(10, 15, 10, 15)));
+        row.setMaximumSize(new Dimension(1000, 70));
 
-        JPanel timeInfo = new JPanel(new GridLayout(2, 1));
-        timeInfo.setOpaque(false);
-        JLabel time = new JLabel(showtime.getStartTime());
-        time.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        JLabel hall = new JLabel("Premium Hall " + showtime.getHallId());
-        hall.setForeground(TEXT_GRAY);
-        timeInfo.add(time);
-        timeInfo.add(hall);
+        // Showtime and Hall ID text
+        JLabel time = new JLabel(s.getStartTime() + " - Hall " + s.getHallId());
+        time.setFont(new Font("SansSerif", Font.BOLD, 20));
 
-        JLabel price = new JLabel("€" + String.format("%.2f", showtime.getPrice()));
-        price.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        price.setForeground(new Color(46, 125, 50));
-        price.setHorizontalAlignment(SwingConstants.CENTER);
+        // Price display formatted to 2 decimal places
+        JLabel price = new JLabel("€" + String.format("%.2f", s.getPrice()));
+        price.setFont(new Font("SansSerif", Font.BOLD, 20));
+        price.setForeground(new Color(0, 153, 51)); // Green color for price
 
+        // Selection button
         JButton btn = new JButton("Select Seats");
-        btn.setPreferredSize(new Dimension(160, 45));
-        btn.setBackground(ACCENT_BLUE);
+        btn.setBackground(PRIMARY_BLUE);
         btn.setForeground(Color.WHITE);
-        btn.setFocusPainted(false);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btn.addActionListener(e -> selectSeat(showtime));
+        btn.setFont(new Font("SansSerif", Font.BOLD, 20));
 
-        card.add(timeInfo, BorderLayout.WEST);
-        card.add(price, BorderLayout.CENTER);
-        card.add(btn, BorderLayout.EAST);
+        // Navigate to seat selection on click
+        btn.addActionListener(e -> selectSeat(s));
 
-        return card;
+        // Layout components within the row
+        row.add(time, BorderLayout.WEST);
+        row.add(price, BorderLayout.CENTER);
+        row.add(btn, BorderLayout.EAST);
+
+        return row;
     }
 
-    // --- Database & Logic Methods (Existing) ---
+    /**
+     * Retrieves Movie data from the database using the movie ID.
+     */
     private Movie getMovieDetails(int movieId) {
         try (Connection conn = DatabaseConnection.getConnection()) {
             String query = "SELECT * FROM movies WHERE id = ?";
@@ -242,6 +185,9 @@ public class WatchShowtimesPage extends JFrame {
         return null;
     }
 
+    /**
+     * Retrieves all showtimes (screenings) for a specific movie ID, ordered by time.
+     */
     private List<Showtime> getShowtimesForMovie(int movieId) {
         List<Showtime> showtimes = new ArrayList<>();
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -253,28 +199,37 @@ public class WatchShowtimesPage extends JFrame {
                 showtimes.add(new Showtime(rs.getInt("id"), rs.getInt("movie_id"),
                         rs.getInt("hall_id"), rs.getString("start_time"), rs.getDouble("price")));
             }
-        } catch (SQLException ex) { ex.printStackTrace(); }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
         return showtimes;
     }
 
+    /**
+     * Safely loads an image file and scales it for the UI.
+     */
     private ImageIcon loadImage(String imagePath) {
         File imageFile = new File("images/" + (imagePath == null ? "default.jpg" : imagePath));
+        // Fallback to default image if file does not exist
         String path = imageFile.exists() ? imageFile.getAbsolutePath() : "images/default.jpg";
         Image img = new ImageIcon(path).getImage();
-        return new ImageIcon(img.getScaledInstance(120, 180, Image.SCALE_SMOOTH));
+        // Return a smooth-scaled version of the image
+        return new ImageIcon(img.getScaledInstance(130, 180, Image.SCALE_SMOOTH));
     }
 
+    /**
+     * Closes current page and opens the seat selection screen.
+     */
     private void selectSeat(Showtime showtime) {
         new SeatSelectionPage(showtime.getHallId(), showtime.getMovieId(), showtime.getId(), new ArrayList<String>()).setVisible(true);
         this.dispose();
     }
 
+    /**
+     * Closes current page and returns to the movie list screen.
+     */
     private void backToMovies() {
         new MovieListingPage().setVisible(true);
         this.dispose();
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new WatchShowtimesPage(1).setVisible(true));
     }
 }
