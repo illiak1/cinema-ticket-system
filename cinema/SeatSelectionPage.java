@@ -1,284 +1,228 @@
+// Define the package for organizing classes related to the cinema application
 package cinema;
 
+// Import Swing and AWT components for the Graphical User Interface (GUI)
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.*;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.*;
 
+/**
+ * The SeatSelectionPage class represents a window where users can view and select seats
+ * for a specific movie screening in a specific hall.
+ */
 public class SeatSelectionPage extends JFrame {
-    private int hallId;
-    private int movieId;
+    // Fields to store the IDs for the hall, movie, and specific screening
+    private int hallId, movieId, screeningId;
+
+    // Panel to hold the grid of seat buttons
     private JPanel seatPanel;
+
+    // Lists to track the button objects, seat data objects, and any previously selected seats
     private List<JButton> seatButtons = new ArrayList<>();
     private List<Seat> seats;
     private List<String> preSelectedSeats;
-    private int screeningId;
 
+    // Define a custom blue color used for the primary confirmation button
+    private static final Color PRIMARY_BLUE = new Color(34, 150, 243);
+
+    /**
+     * Constructor: Initializes the frame, sets up the layout, and populates the seat grid.
+     */
     public SeatSelectionPage(int hallId, int movieId, int screeningId, List<String> preSelectedSeats) {
+        // Initialize instance variables with values passed from the previous page
         this.hallId = hallId;
         this.movieId = movieId;
         this.screeningId = screeningId;
-        int userId = UserSession.getUserId();
+        // Ensure preSelectedSeats is never null to avoid NullPointerExceptions
+        this.preSelectedSeats = (preSelectedSeats == null) ? new ArrayList<>() : preSelectedSeats;
 
-        // Ensure preSelectedSeats is never null
-        if (preSelectedSeats == null) {
-            this.preSelectedSeats = new ArrayList<>();
-        } else {
-            this.preSelectedSeats = preSelectedSeats;
-        }
-
-        // Basic setup for the JFrame
+        // Configure the main window (JFrame) properties
         setTitle("Seat Selection");
-        setLayout(new BorderLayout());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout()); // Use BorderLayout to organize top, center, and bottom sections
+        setSize(1300, 800);
+        setLocationRelativeTo(null); // Center the window on the screen
 
-        // Add the "Back to Showtimes" button
-        addBackToShowtimesButton();
+        // --- 1. TOP PANEL: Navigation ---
+        // Create a black header panel containing a "Back" button
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.setBackground(Color.BLACK);
 
-        // Initialize the seat panel with a grid layout
-        seatPanel = new JPanel();
-        seatPanel.setLayout(new GridLayout(0, 10, 10, 10));  // 10 seats per row, adjust as needed
-        seatPanel.setBackground(Color.WHITE);
+        JButton backBtn = new JButton("← Back to Showtimes");
+        backBtn.setForeground(Color.WHITE);
+        backBtn.setBackground(Color.BLACK);
+        backBtn.setBorderPainted(false);
+        backBtn.setFocusPainted(false);
+        backBtn.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Change cursor to hand on hover
 
-        // Fetch seats for the given hall from the database
-        seats = getSeatsForHall(hallId);
-
-        // Display the seat buttons dynamically
-        for (Seat seat : seats) {
-            JButton seatButton = new JButton("Row " + seat.getRowNumber() + " Seat " + seat.getSeatNumber());
-            seatButton.putClientProperty("seatData", seat);  // Attach seat data to the button
-
-            String seatName = seatButton.getText();
-
-            // Highlight pre-selected seats
-            if (this.preSelectedSeats.contains(seatName)) {
-                seatButton.setBackground(Color.YELLOW);  // Pre-selected seats
-            }
-
-            if (seat.isBooked()) {
-                seatButton.setBackground(Color.RED);  // Booked seats
-                seatButton.setEnabled(false);  // Disable interaction with booked seats
-            } else if (this.preSelectedSeats.contains(seatName)) {
-                seatButton.setBackground(Color.YELLOW);  // Selected seats
-            } else {
-                seatButton.setBackground(Color.GREEN);  // Available seats
-                seatButton.setEnabled(true);
-
-                seatButton.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        toggleSeatSelection(seatButton);  // Toggle seat selection when clicked
-                    }
-                });
-            }
-
-            seatButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-            seatButton.setFocusPainted(false);
-            seatButtons.add(seatButton);
-            seatPanel.add(seatButton);  // Add the seat button to the panel
-        }
-
-        // Add scrollable panel for seats
-        JScrollPane scrollPane = new JScrollPane(seatPanel);
-        add(scrollPane, BorderLayout.CENTER);
-
-        // "Go to Confirmation" Button to confirm seat selection
-        JButton goToConfirmationButton = new JButton("Go to Confirmation");
-        goToConfirmationButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        goToConfirmationButton.setBackground(new Color(0, 122, 255));  // Blue button color
-        goToConfirmationButton.setForeground(Color.WHITE);
-        goToConfirmationButton.setFocusPainted(false);
-        goToConfirmationButton.setPreferredSize(new Dimension(190, 40));  // Button size
-        goToConfirmationButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                redirectToConfirmationPage();  // Redirect to the booking confirmation page
-            }
+        // Return to the previous page when clicked
+        backBtn.addActionListener(e -> {
+            this.dispose(); // Close current window
+            new WatchShowtimesPage(movieId).setVisible(true); // Open showtimes page
         });
 
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.add(goToConfirmationButton);
-        add(buttonPanel, BorderLayout.SOUTH);  // Add button at the bottom
-
-        // Final window settings
-        setSize(800, 800);  // Size of the window
-        setLocationRelativeTo(null);  // Center window on screen
-    }
-
-    // Add "Back to Showtimes" button styled like "Back to Movies"
-    private void addBackToShowtimesButton() {
-        JButton backBtn = new JButton("← Back to Showtimes");
-        backBtn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        backBtn.setForeground(Color.WHITE);
-        backBtn.setBackground(new Color(18, 18, 18));  // Same color as the navbar
-        backBtn.setFocusPainted(false);
-        backBtn.setBorderPainted(false);
-        backBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        backBtn.addActionListener(e -> backToShowtimes());  // Action listener for the button
-
-        // Create panel to hold the button on the left side
-        JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(new Color(18, 18, 18));  // Same color as navbar
-        topPanel.setPreferredSize(new Dimension(getWidth(), 45));
-        topPanel.setBorder(new EmptyBorder(0, 20, 0, 20));
-        topPanel.add(backBtn, BorderLayout.WEST);  // Add button to the left
-
-        // Add the topPanel to the frame
+        topPanel.add(backBtn);
         add(topPanel, BorderLayout.NORTH);
+
+        // --- 2. CENTER PANEL: Seat Grid ---
+        // Create a grid layout for seats (dynamic rows, 10 columns)
+        seatPanel = new JPanel(new GridLayout(0, 10, 5, 5));
+
+        // Fetch seat data from the database for this specific hall and screening
+        seats = getSeatsForHall(hallId);
+        displaySeats(); // Method to turn seat data into clickable buttons
+
+        // Add the seat panel inside a scroll pane in case there are many rows
+        add(new JScrollPane(seatPanel), BorderLayout.CENTER);
+
+        // --- 3. BOTTOM PANEL: Actions ---
+        // Create the "Go to Confirmation" button to finalize selection
+        JButton confirmBtn = new JButton("Go to Confirmation");
+        confirmBtn.setBackground(PRIMARY_BLUE);
+        confirmBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        confirmBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        confirmBtn.setForeground(Color.WHITE);
+        confirmBtn.setFont(new Font("SansSerif", Font.BOLD, 20));
+
+        // Logic to move to the next page
+        confirmBtn.addActionListener(e -> redirectToConfirmationPage());
+
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(confirmBtn);
+        add(bottomPanel, BorderLayout.SOUTH);
     }
 
-    // Handle "Back to Showtimes" action
-    private void backToShowtimes() {
-        this.dispose();  // Close current page
-        new WatchShowtimesPage(movieId).setVisible(true);  // Open the Watch Showtimes page again
-    }
+    /**
+     * Loops through the list of Seat objects and creates a JButton for each.
+     */
+    private void displaySeats() {
+        for (Seat seat : seats) {
+            // Label button with seat coordinates
+            JButton btn = new JButton("Row " + seat.getRowNumber() + " Seat " + seat.getSeatNumber());
 
-    // Toggle seat selection when clicked (green for available, yellow for selected)
-    private void toggleSeatSelection(JButton seatButton) {
-        if (seatButton.getBackground() == Color.GREEN) {
-            seatButton.setBackground(Color.YELLOW);  // Select seat (change to yellow)
-        } else if (seatButton.getBackground() == Color.YELLOW) {
-            seatButton.setBackground(Color.GREEN);  // Deselect seat (change back to green)
+            // Store the raw Seat object inside the button for easy retrieval later
+            btn.putClientProperty("seatData", seat);
+
+            // Determine initial color based on status
+            if (seat.isBooked()) {
+                btn.setBackground(Color.RED); // Occupied
+                btn.setEnabled(false);        // Cannot click booked seats
+            } else if (preSelectedSeats.contains("Row " + seat.getRowNumber() + " Seat " + seat.getSeatNumber())) {
+                btn.setBackground(Color.YELLOW); // Already selected in a previous step
+            } else {
+                btn.setBackground(Color.GREEN); // Available
+            }
+
+            // Toggle selection color when clicked (Green <-> Yellow)
+            btn.addActionListener(e -> {
+                if (btn.getBackground() == Color.GREEN) {
+                    btn.setBackground(Color.YELLOW);
+                } else {
+                    btn.setBackground(Color.GREEN);
+                }
+            });
+
+            seatButtons.add(btn); // Add to list for tracking
+            seatPanel.add(btn);   // Add to the visual panel
         }
     }
 
-    // Method to fetch seat data from the database
+    /**
+     * Collects IDs of all selected (yellow) seats and navigates to the confirmation screen.
+     */
+    private void redirectToConfirmationPage() {
+        List<String> selectedNames = new ArrayList<>();
+        List<Integer> selectedIds = new ArrayList<>();
+
+        // Identify which buttons the user highlighted in yellow
+        for (JButton btn : seatButtons) {
+            if (btn.getBackground() == Color.YELLOW) {
+                Seat seat = (Seat) btn.getClientProperty("seatData");
+                selectedNames.add("Row " + seat.getRowNumber() + " Seat " + seat.getSeatNumber());
+                selectedIds.add(seat.getId());
+            }
+        }
+
+        // Proceed if at least one seat is chosen
+        if (!selectedIds.isEmpty()) {
+            double totalPrice = selectedIds.size() * getShowtimeDetails(screeningId).getPrice();
+
+            // Open the confirmation page and pass all necessary booking data
+            new BookingConfirmationPage(selectedNames, selectedIds, totalPrice,
+                    getMovieDetails(movieId), getShowtimeDetails(screeningId),
+                    hallId, screeningId).setVisible(true);
+            this.dispose();
+        } else {
+            // Warn the user if they clicked confirm without selecting anything
+            JOptionPane.showMessageDialog(this, "Please select at least one seat.");
+        }
+    }
+
+    // --- DATABASE LOGIC METHODS ---
+
+    /**
+     * Queries the database for all seats in a hall and checks if they are booked for the given screening.
+     */
     private List<Seat> getSeatsForHall(int hallId) {
         List<Seat> seats = new ArrayList<>();
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT s.id, s.hall_id, s.row_number, s.seat_number, s.seat_type, " +
-                    "CASE WHEN EXISTS (SELECT 1 FROM tickets t WHERE t.seat_id = s.id  AND t.screening_id = ? AND t.status = 'BOOKED') " +
-                    "THEN 'BOOKED' ELSE 'AVAILABLE' END AS seat_status " +
-                    "FROM seats s " +
-                    "WHERE s.hall_id = ? " +
-                    "ORDER BY s.row_number ASC, s.seat_number ASC";  // Fetch sorted seats
-            PreparedStatement pst = conn.prepareStatement(query);
+        // SQL query uses a LEFT JOIN or EXISTS check to see if a ticket exists for each seat at this screening time
+        String query = "SELECT s.id, s.row_number, s.seat_number, s.seat_type, " +
+                "CASE WHEN EXISTS (SELECT 1 FROM tickets t WHERE t.seat_id = s.id AND t.screening_id = ? AND t.status = 'BOOKED') THEN 'BOOKED' ELSE 'AVAILABLE' END AS seat_status " +
+                "FROM seats s WHERE s.hall_id = ? ORDER BY s.row_number, s.seat_number";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement(query)) {
             pst.setInt(1, screeningId);
             pst.setInt(2, hallId);
             ResultSet rs = pst.executeQuery();
 
             while (rs.next()) {
-                int seatId = rs.getInt("id");
-                int rowNumber = rs.getInt("row_number");
-                int seatNumber = rs.getInt("seat_number");
-                String seatType = rs.getString("seat_type");
-                String seatStatus = rs.getString("seat_status");
-                boolean isBooked = seatStatus.equals("BOOKED");
-                seats.add(new Seat(seatId, hallId, rowNumber, seatNumber, seatType, isBooked));
+                // Map database rows to Seat objects
+                seats.add(new Seat(
+                        rs.getInt("id"),
+                        hallId,
+                        rs.getInt("row_number"),
+                        rs.getInt("seat_number"),
+                        rs.getString("seat_type"),
+                        "BOOKED".equals(rs.getString("seat_status"))
+                ));
             }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error fetching seat data: " + ex.getMessage());
-        }
+        } catch (SQLException ex) { ex.printStackTrace(); }
         return seats;
     }
 
-    // Redirect to confirmation page after selecting seats
-    private void redirectToConfirmationPage() {
-        // Fetch movie and showtime details
-        Movie movie = getMovieDetails(movieId);
-        Showtime showtime = getShowtimeDetails(screeningId);
-
-        if (showtime == null) {
-            JOptionPane.showMessageDialog(this, "Error: Could not retrieve pricing.");
-            return;
-        }
-
-        // Prepare selected seat data
-        List<String> selectedNames = new ArrayList<>();
-        List<Integer> selectedIds = new ArrayList<>();
-
-        for (JButton seatButton : seatButtons) {
-            if (seatButton.getBackground() == Color.YELLOW) {
-                selectedNames.add(seatButton.getText());  // Add selected seat's name
-                Seat s = (Seat) seatButton.getClientProperty("seatData");
-                if (s != null) {
-                    selectedIds.add(s.getId());  // Add the seat ID
-                }
-            }
-        }
-
-        if (!selectedIds.isEmpty()) {
-            double totalPrice = selectedIds.size() * showtime.getPrice();
-            new BookingConfirmationPage(selectedNames, selectedIds, totalPrice, movie, showtime, hallId, screeningId).setVisible(true);
-            this.dispose();  // Close current page
-        } else {
-            JOptionPane.showMessageDialog(this, "No seats selected.");
-        }
-    }
-
-    // Method to fetch movie details
+    /**
+     * Fetches metadata for a specific movie (Title, Description, etc.) by ID.
+     */
     private Movie getMovieDetails(int movieId) {
-        Movie movie = null;
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT * FROM movies WHERE id = ?";
-            PreparedStatement pst = conn.prepareStatement(query);
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement("SELECT * FROM movies WHERE id = ?")) {
             pst.setInt(1, movieId);
             ResultSet rs = pst.executeQuery();
-
             if (rs.next()) {
-                movie = new Movie(rs.getInt("id"), rs.getString("title"), rs.getString("description"),
+                return new Movie(rs.getInt("id"), rs.getString("title"), rs.getString("description"),
                         rs.getInt("duration_minutes"), rs.getDouble("rating"),
                         rs.getString("release_date"), rs.getString("image_path"));
             }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error fetching movie details: " + ex.getMessage());
-        }
-        return movie;
+        } catch (SQLException ex) { ex.printStackTrace(); }
+        return null;
     }
 
-    // Method to fetch showtime details
+    /**
+     * Fetches details for a specific screening (Time, Price, etc.) by ID.
+     */
     private Showtime getShowtimeDetails(int screeningId) {
-        Showtime showtime = null;
-
-        try (Connection conn = DatabaseConnection.getConnection()) {
-
-            String query = "SELECT * FROM screenings WHERE id = ?";
-            PreparedStatement pst = conn.prepareStatement(query);
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pst = conn.prepareStatement("SELECT * FROM screenings WHERE id = ?")) {
             pst.setInt(1, screeningId);
-
             ResultSet rs = pst.executeQuery();
-
             if (rs.next()) {
-                showtime = new Showtime(
-                        rs.getInt("id"),
-                        rs.getInt("movie_id"),
-                        rs.getInt("hall_id"),
-                        rs.getString("start_time"),
-                        rs.getDouble("price")
-                );
+                return new Showtime(rs.getInt("id"), rs.getInt("movie_id"), rs.getInt("hall_id"),
+                        rs.getString("start_time"), rs.getDouble("price"));
             }
-
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error fetching showtime details: " + ex.getMessage());
-        }
-
-        return showtime;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try (Connection conn = DatabaseConnection.getConnection()) {
-                String query = "SELECT id, hall_id, movie_id FROM screenings LIMIT 1";
-                PreparedStatement pst = conn.prepareStatement(query);
-                ResultSet rs = pst.executeQuery();
-
-                if (rs.next()) {
-                    int hallId = rs.getInt("hall_id");
-                    int movieId = rs.getInt("movie_id");
-
-                    int screeningId = rs.getInt("id"); // or screening_id depending on your table
-                    new SeatSelectionPage(hallId, movieId, screeningId, new ArrayList<>()).setVisible(true);
-                } else {
-                    JOptionPane.showMessageDialog(null, "No showtimes available.");
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage());
-            }
-        });
+        } catch (SQLException ex) { ex.printStackTrace(); }
+        return null;
     }
 }
