@@ -1,154 +1,139 @@
+// Define the package name for the cinema application
 package cinema;
 
+// Import Swing components for the GUI
 import javax.swing.*;
+// Import AWT classes for layout, colors, and events
 import java.awt.*;
 import java.awt.event.*;
+// Import SQL classes for database connectivity
 import java.sql.*;
 
+// Main class for the Login window, extending JFrame
 public class LoginForm extends JFrame {
-    private JTextField emailField;
-    private JPasswordField passwordField;
+    // UI components for user input: email and password
+    private JTextField emailField = new JTextField(20);
+    private JPasswordField passwordField = new JPasswordField(20);
 
+    // Constructor to initialize the login form
     public LoginForm() {
-        // Set the window title
+        // Set basic frame properties
         setTitle("Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new GridBagLayout()); // Used to center the content panel within the window
+        getContentPane().setBackground(Color.WHITE);
 
-        // Set up the main panel with GridBagLayout for flexible positioning
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridBagLayout());  // Use GridBagLayout for flexible positioning
-        mainPanel.setBackground(Color.WHITE);
+        // Create a sub-panel for the input fields using a grid layout (4 rows, 1 column)
+        JPanel formPanel = new JPanel(new GridLayout(4, 1, 10, 10));
+        formPanel.setBackground(Color.WHITE);
 
-        // GridBag constraints object to control component positioning
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);  // Add some space around each component
-        gbc.anchor = GridBagConstraints.WEST;  // Align components to the left
+        // Add email label and input field to the panel
+        formPanel.add(new JLabel("Email:"));
+        formPanel.add(emailField);
 
-        // Create email field
-        JLabel emailLabel = new JLabel("Email:");
-        emailField = new JTextField(20);
-        gbc.gridx = 0; // Set column position
-        gbc.gridy = 0; // Set row position
-        mainPanel.add(emailLabel, gbc);
-        gbc.gridx = 1;  // Move to the next column
-        mainPanel.add(emailField, gbc);
+        // Add password label and input field to the panel
+        formPanel.add(new JLabel("Password:"));
+        formPanel.add(passwordField);
 
-        // Create password field
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordField = new JPasswordField(20);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        mainPanel.add(passwordLabel, gbc);
-        gbc.gridx = 1;
-        mainPanel.add(passwordField, gbc);
-
-        // Create login button
+        // Initialize and style the Login button
         JButton loginButton = new JButton("Login");
-        loginButton.setFont(new Font("Arial", Font.BOLD, 16));
-        loginButton.setBackground(new Color(34, 150, 243)); // Button color
-        loginButton.setForeground(Color.WHITE);
-        loginButton.setFocusPainted(false);
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                loginUser();
-            }
-        });
+        styleButton(loginButton);
+        // Attach action listener to trigger the login logic when clicked
+        loginButton.addActionListener(e -> loginUser());
 
-        // Add login button to the layout with GridBagLayout constraints
-        gbc.gridx = 1;
-        gbc.gridy = 2;  // Place button below the password field
-        mainPanel.add(loginButton, gbc);
-
-        // Add "Register" link to go to the registration form
-        JLabel registerLabel = new JLabel("<HTML><U>Don't have an account? Register here</U></HTML>");
+        // Create a clickable label for users who don't have an account
+        JLabel registerLabel = new JLabel("Don't have an account? Register here", SwingConstants.CENTER);
         registerLabel.setForeground(Color.BLUE);
         registerLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        registerLabel.addMouseListener(new MouseAdapter()   {
-            @Override
+        // Open RegistrationForm and close the current window when clicked
+        registerLabel.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
-                // Navigate to the Registration Form
                 new RegistrationForm().setVisible(true);
-                dispose();  // Close the current login form
+                dispose();
             }
         });
 
-        // Add register label to the layout
-        gbc.gridx = 1;
-        gbc.gridy = 3;  // Place below the login button
-        mainPanel.add(registerLabel, gbc);
+        // Create a container to hold the input fields and the login button
+        JPanel container = new JPanel(new BorderLayout(10, 10));
+        container.setBackground(Color.WHITE);
+        container.add(formPanel, BorderLayout.CENTER);
+        container.add(loginButton, BorderLayout.SOUTH);
 
-        // Add the main panel to the window
-        this.add(mainPanel);
-        this.setSize(400, 300);
-        this.setLocationRelativeTo(null);  // Center the window on the screen
+        // Create a final wrapper to include the registration link at the bottom
+        JPanel finalWrapper = new JPanel(new BorderLayout(10, 20));
+        finalWrapper.setBackground(Color.WHITE);
+        finalWrapper.add(container, BorderLayout.CENTER);
+        finalWrapper.add(registerLabel, BorderLayout.SOUTH);
+
+        // Finalize frame setup: add wrapper, set size, and center on screen
+        add(finalWrapper);
+        setSize(500, 450);
+        setLocationRelativeTo(null);
     }
 
+    // Method to apply consistent styling to buttons
+    private void styleButton(JButton btn) {
+        btn.setFont(new Font("Arial", Font.BOLD, 16));
+        btn.setBackground(new Color(34, 150, 243));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }
+    /**
+     * Logic to handle user authentication
+     */
     private void loginUser() {
-        // Retrieve the user input
+        // Retrieve credentials from text fields
         String email = emailField.getText();
         String password = new String(passwordField.getPassword());
 
+        // Attempt to connect to the database
         try (Connection conn = DatabaseConnection.getConnection()) {
-            // SQL query to fetch user details based on email and password
+            // Prepare SQL query to check credentials
             String query = "SELECT * FROM users WHERE email = ? AND password = ?";
             PreparedStatement pst = conn.prepareStatement(query);
             pst.setString(1, email);
             pst.setString(2, password);
             ResultSet rs = pst.executeQuery();
 
-            // If a user is found
+            // If a record is found, the user is authenticated
             if (rs.next()) {
-                // Set the user ID in the session
-                int userId = rs.getInt("id");
-                UserSession.setUserId(userId);  // This ensures the user is logged in
-
+                // Store user ID in a session and retrieve the user's role
+                UserSession.setUserId(rs.getInt("id"));
                 String role = rs.getString("role");
 
-                // Redirect to movie listing page after successful login
-                new MovieListingPage().setVisible(true); // Show movie listing page
-                this.dispose(); // Close the current login window
+                // Navigate to the main movie listing page
+                new MovieListingPage().setVisible(true);
+                this.dispose();
 
-                // If the user is an admin
-                if ("ADMIN".equals(role)) {
-                    // Open admin panel (could be another frame or window)
-                    openAdminPanel();
-                } else {
-                    // Open user panel (could be another frame or window)
-                    openUserPanel();
-                }
+                // Branch logic based on user role (Admin vs Regular User)
+                if ("ADMIN".equals(role)) openAdminPanel();
+                else openUserPanel();
             } else {
-                // Show an error if credentials are incorrect
+                // Show error if no matching record is found
                 JOptionPane.showMessageDialog(this, "Invalid email or password!");
             }
         } catch (SQLException ex) {
+            // Show error message if database communication fails
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
-
+    // Helper method to transition to the Admin interface
     private void openAdminPanel() {
-        // Open the admin panel when login is successful
         JOptionPane.showMessageDialog(this, "Welcome, ADMIN!");
-        AdminPanel adminPanel = new AdminPanel();
-        adminPanel.setVisible(true);  // Make the AdminPanel visible
-
-        this.dispose();  // Close the current login window
+        new AdminPanel().setVisible(true);
+        this.dispose();
     }
 
+    // Helper method for standard user login confirmation
     private void openUserPanel() {
-        // This function should open the user panel
         JOptionPane.showMessageDialog(this, "Welcome, User!");
-        // You can create a new JFrame or open a new window for the user
     }
 
+    // Application entry point
     public static void main(String[] args) {
-        // Create and display the login form
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new LoginForm().setVisible(true);
-            }
-        });
+        // Run the GUI on the Event Dispatch Thread for thread safety
+        SwingUtilities.invokeLater(() -> new LoginForm().setVisible(true));
     }
 }
