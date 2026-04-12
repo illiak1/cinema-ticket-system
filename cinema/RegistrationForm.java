@@ -5,68 +5,75 @@ import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 
+/**
+ * RegistrationForm class provides a graphical user interface for new user sign-up.
+ */
 public class RegistrationForm extends JFrame {
+    // UI components for user input
     private JTextField emailField;
     private JPasswordField passwordField, confirmPasswordField;
     private JTextField fullNameField;
 
     public RegistrationForm() {
-        // Set the window title
+        // Basic window configuration
         setTitle("Registration");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Set up the main panel with GridBagLayout for flexible positioning
+        // Main container panel setup
         JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new GridBagLayout());  // GridBagLayout allows flexible control over components placement
+        // GridBagLayout is used for precise control over component rows and columns
+        mainPanel.setLayout(new GridBagLayout());
         mainPanel.setBackground(Color.WHITE);
 
-        // GridBag constraints object to control component positioning
+        // GridBagConstraints defines where and how components are placed within the GridBagLayout
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);  // Add some space around each component
-        gbc.anchor = GridBagConstraints.WEST;  // Align components to the left
+        gbc.insets = new Insets(10, 10, 10, 10);  // Exterior padding for each component
+        gbc.anchor = GridBagConstraints.WEST;     // Align labels and fields to the left
 
-        // Create email field
+        // --- Email Input Section ---
         JLabel emailLabel = new JLabel("Email:");
         emailField = new JTextField(20);
-        gbc.gridx = 0; // Set column position
-        gbc.gridy = 0; // Set row position
+        gbc.gridx = 0; // Column 0
+        gbc.gridy = 0; // Row 0
         mainPanel.add(emailLabel, gbc);
-        gbc.gridx = 1;  // Move to the next column
+        gbc.gridx = 1; // Column 1
         mainPanel.add(emailField, gbc);
 
-        // Create full name field
+        // --- Full Name Input Section ---
         JLabel fullNameLabel = new JLabel("Full Name:");
         fullNameField = new JTextField(20);
         gbc.gridx = 0;
-        gbc.gridy = 1; // Move to next row
+        gbc.gridy = 1; // Row 1
         mainPanel.add(fullNameLabel, gbc);
         gbc.gridx = 1;
         mainPanel.add(fullNameField, gbc);
 
-        // Create password field
+        // --- Password Input Section ---
         JLabel passwordLabel = new JLabel("Password:");
         passwordField = new JPasswordField(20);
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 2; // Row 2
         mainPanel.add(passwordLabel, gbc);
         gbc.gridx = 1;
         mainPanel.add(passwordField, gbc);
 
-        // Create confirm password field
+        // --- Confirm Password Input Section ---
         JLabel confirmPasswordLabel = new JLabel("Confirm Password:");
         confirmPasswordField = new JPasswordField(20);
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 3; // Row 3
         mainPanel.add(confirmPasswordLabel, gbc);
         gbc.gridx = 1;
         mainPanel.add(confirmPasswordField, gbc);
 
-        // Create register button
+        // --- Submit Button Section ---
         JButton registerButton = new JButton("Register");
         registerButton.setFont(new Font("Arial", Font.BOLD, 16));
-        registerButton.setBackground(new Color(34, 150, 243)); // Button color
-        registerButton.setForeground(Color.WHITE);
+        registerButton.setBackground(new Color(34, 150, 243)); // Modern blue theme
+        registerButton.setForeground(Color.WHITE);            // White text
         registerButton.setFocusPainted(false);
+
+        // Attach event listener to trigger the registration logic
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -74,94 +81,71 @@ public class RegistrationForm extends JFrame {
             }
         });
 
-        // Add register button to the layout with GridBagLayout constraints
         gbc.gridx = 1;
-        gbc.gridy = 4;  // Place button below the last input field
+        gbc.gridy = 4; // Bottom row
         mainPanel.add(registerButton, gbc);
 
-        // Add the main panel to the window
+        // Finalize frame setup
         this.add(mainPanel);
         this.setSize(400, 400);
-        this.setLocationRelativeTo(null);  // Center the window on the screen
+        this.setLocationRelativeTo(null);  // Center the window on the desktop
     }
 
+    /**
+     * Handles the logic for validating input and saving user data to the database.
+     */
     private void registerUser() {
-        // Retrieve the user input
-        String email = emailField.getText();
+        // Extracting and trimming whitespace from inputs
+        String email = emailField.getText().trim();
         String password = new String(passwordField.getPassword());
         String confirmPassword = new String(confirmPasswordField.getPassword());
-        String fullName = fullNameField.getText();
+        String fullName = fullNameField.getText().trim();
 
         try {
-            // Validate email format
-            if (email.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Email cannot be empty.");
-                return;
-            } else {
-                InputValidator.validateEmail(email);  // Validate email format
-            }
+            // 1. Input Validation: Checks format and existence via custom Validator class
+            InputValidator.validateEmail(email, 0);
+            InputValidator.validateFullName(fullName);
 
-            // Validate full name format
-            if (fullName.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Full Name cannot be empty.");
-                return;
-            } else {
-                InputValidator.validateFullName(fullName); // Validate full name format
+            // 2. Logic Check: Ensure passwords are provided and match
+            if (password.isEmpty()) {
+                throw new InvalidInputException("Password cannot be empty.");
             }
-
-            // Validate password
-            if (password.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Password cannot be empty.");
-                return;
-            }
-
-            // Validate confirm password
-            if (confirmPassword.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Confirm Password cannot be empty.");
-                return;
-            }
-
-            // Check if passwords match
             if (!password.equals(confirmPassword)) {
-                JOptionPane.showMessageDialog(this, "Passwords do not match!");
-                return;
+                throw new InvalidInputException("Passwords do not match!");
             }
 
-            // Now, general check for empty fields (after format validation)
-            if (email.trim().isEmpty() || password.trim().isEmpty() || fullName.trim().isEmpty() || confirmPassword.trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in all fields!");
-                return;
-            }
-
-
-
-            // Insert the data into the database
+            // 3. Database Interaction
             try (Connection conn = DatabaseConnection.getConnection()) {
                 String query = "INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, ?)";
                 PreparedStatement pst = conn.prepareStatement(query);
+
+                // Binding parameters to prevent SQL Injection
                 pst.setString(1, email);
-                pst.setString(2, password);  // Better to hash the password before storing it
+                pst.setString(2, password);
                 pst.setString(3, fullName);
-                pst.setString(4, "USER");  // Default role for a new user is "USER"
+                pst.setString(4, "USER");
+
                 pst.executeUpdate();
                 JOptionPane.showMessageDialog(this, "Registration Successful!");
 
-                // Redirect to the login page after successful registration
-                new LoginForm().setVisible(true); // Show the login page
-                this.dispose(); // Close the current registration window
-
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+                // Transition to Log in screen and close registration window
+                new LoginForm().setVisible(true);
+                this.dispose();
             }
         } catch (InvalidInputException ex) {
+            // Displays specific validation error messages to the user
             JOptionPane.showMessageDialog(this, ex.getMessage());
+        } catch (SQLException ex) {
+            // Handles connectivity or query issues
+            JOptionPane.showMessageDialog(this, "Database Error: " + ex.getMessage());
         }
     }
 
-
-
+    /**
+     * Entry point of the application.
+     */
     public static void main(String[] args) {
-        // Create and display the registration form
+        // Run the GUI creation on the Event Dispatch Thread (EDT) for thread safety
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
