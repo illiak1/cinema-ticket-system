@@ -5,13 +5,10 @@ package cinema.panels;
 import cinema.database.DatabaseConnection;
 import cinema.exception.InputValidator;
 import cinema.exception.InvalidInputException;
-
-
-//Import standard Java libraries for GUI components (Swing/AWT) and database operations (SQL).
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 
 /**
  * UsersPanel is a graphical component used to manage (Create, Read, Update, Delete)
