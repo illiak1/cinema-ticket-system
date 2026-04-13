@@ -1,70 +1,39 @@
-package cinema;
+// Package declaration
+package cinema.models;
 
-/**
- * The Seat class represents a single seat in a cinema hall.
- * It contains information about the seat's position, type,
- * and booking status.
- */
+// Represents a seat in a cinema hall
 public class Seat {
-    private int id;
-    private int hallId;
-    private int rowNumber;
-    private int seatNumber;
-    private String seatType;
-    private boolean isBooked;  
+    private int id;             // Seat ID
+    private int hallId;         // Hall ID where the seat is located
+    private int rowNumber;      // Row number
+    private int seatNumber;     // Seat number in the row
+    private String seatType;    // Type of seat (e.g., regular, VIP)
+    private boolean isBooked;   // Booking status
 
-    /**
-     * Constructor to initialize a Seat object with all properties.
-     *
-     * @param id         unique seat ID
-     * @param hallId     hall ID where the seat belongs
-     * @param rowNumber  row number of the seat
-     * @param seatNumber seat number within the row
-     * @param seatType   type/category of the seat
-     * @param isBooked   booking status of the seat
-     */
+    // Initialize a seat with all details
     public Seat(int id, int hallId, int rowNumber, int seatNumber, String seatType, boolean isBooked) {
         this.id = id;
         this.hallId = hallId;
         this.rowNumber = rowNumber;
         this.seatNumber = seatNumber;
         this.seatType = seatType;
-        this.isBooked = isBooked;  
+        this.isBooked = isBooked;
     }
 
-    // Getters and setters
-    public boolean isBooked() {
-        return isBooked;
-    }
+    // Check if seat is booked
+    public boolean isBooked() { return isBooked; }
 
-    public void setBooked(boolean booked) {
-        isBooked = booked;
-    }
+    // Set seat booking status
+    public void setBooked(boolean booked) { isBooked = booked; }
 
-    // Other getters and setters...
+    // Getters
+    public int getId() { return id; }
+    public int getHallId() { return hallId; }
+    public int getRowNumber() { return rowNumber; }
+    public int getSeatNumber() { return seatNumber; }
+    public String getSeatType() { return seatType; }
 
-
-    public int getId() {
-        return id;
-    }
-
-    public int getHallId() {
-        return hallId;
-    }
-
-    public int getRowNumber() {
-        return rowNumber;
-    }
-
-    public int getSeatNumber() {
-        return seatNumber;
-    }
-
-    public String getSeatType() {
-        return seatType;
-    }
-
-    //Returns a string representation of the Seat object
+    // String representation of seat
     @Override
     public String toString() {
         return "Seat{" +

@@ -1,4 +1,5 @@
-package cinema;
+// Package declaration
+package cinema.models;
 
 // Represents a movie with details like title, description, duration, rating, release date, and image
 public class Movie {
