@@ -1,9 +1,9 @@
-package cinema;
+// Package declaration
+package cinema.panels;
 
-import cinema.panels.*;
-
-import javax.swing.*;
+// Import necessary libraries for GUI (Swing/AWT) and Database (SQL)
 import java.awt.*;
+import javax.swing.*;
 
 public class AdminPanel extends JFrame {
 
@@ -27,14 +27,13 @@ public class AdminPanel extends JFrame {
 
         // Add the tabbedPane to the frame
         add(tabbedPane, BorderLayout.CENTER);  // Main content in the center
-        
-        
+    }
+
     public static void main(String[] args) {
         // Create and display the AdminPanel when the program starts
         SwingUtilities.invokeLater(() -> {
             AdminPanel adminPanel = new AdminPanel();
             adminPanel.setVisible(true);  // Make the window visible
         });
-    }
     }
 }
