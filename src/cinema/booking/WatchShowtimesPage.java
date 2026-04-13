@@ -1,7 +1,13 @@
-// Define the package name for the cinema application
-package cinema;
+// Package declaration
+package cinema.booking;
 
-// Import necessary Java Swing and AWT classes for the GUI
+// Import project-specific classes
+import cinema.database.DatabaseConnection;
+import cinema.models.Movie;
+import cinema.models.Showtime;
+
+// Import necessary libraries for GUI (Swing/AWT) and Database (SQL)
+// and utility classes for data collection and File class
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;

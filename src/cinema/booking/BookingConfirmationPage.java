@@ -1,10 +1,13 @@
-/* * Package declaration for the cinema management system
- */
-package cinema;
+// Package declaration
+package cinema.booking;
 
-/* * Importing necessary libraries for GUI (Swing/AWT), File handling,
- * Collections, and Database connectivity (SQL)
- */
+// Import project-specific classes
+import cinema.auth.UserSession;
+import cinema.database.DatabaseConnection;
+import cinema.models.Movie;
+import cinema.models.Showtime;
+
+// Import necessary libraries for GUI (Swing/AWT) and Database (SQL)
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -170,7 +173,8 @@ public class BookingConfirmationPage extends JFrame {
                     insertStmt.executeUpdate();
                 }
                 JOptionPane.showMessageDialog(this, "Booking Confirmed! Enjoy your movie!");
-                this.dispose(); // Close the confirmation page
+                this.dispose(); // Close the confirmation page(this window)
+                System.exit(0); // Closes all windows and stops the program
             }
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "Database Error: " + ex.getMessage());
