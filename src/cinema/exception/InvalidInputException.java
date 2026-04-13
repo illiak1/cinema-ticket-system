@@ -1,5 +1,5 @@
 // Package declaration
-package cinema;
+package cinema.exception;
 /**
  * Custom Exception for Input Validation
  */

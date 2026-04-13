@@ -1,4 +1,4 @@
-package cinema;
+package cinema.auth; // Package declaration
 
 public class UserSession {
     private static int loggedInUserId = -1;  // Default to -1 (no user logged in)

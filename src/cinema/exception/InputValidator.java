@@ -1,5 +1,5 @@
 // Package declaration
-package cinema;
+package cinema.exception;
 
 // Import necessary libraries for and Database (SQL) and Date
 import cinema.database.DatabaseConnection;
@@ -11,7 +11,7 @@ import java.sql.*;
  * Note: Changed from 'extends Exception' to a standard class,
  * as it contains static utility methods rather than being an exception itself.
  */
-public class InputValidator {
+public class InputValidator{
 
     // Validate if a string can be parsed as a positive integer
     public static void validatePositiveInteger(String input) throws InvalidInputException {
@@ -37,17 +37,35 @@ public class InputValidator {
         }
     }
 
-    // Validate email format (using regex)
-    public static void validateEmail(String email) throws InvalidInputException {
+    // Validate email format (using regex) and check if email is already taken
+    public static void validateEmail(String email, int userId) throws InvalidInputException {
         String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        if (!email.matches(emailRegex)) {
+        if (email == null || !email.matches(emailRegex)) {
             throw new InvalidInputException("Invalid email format. Please enter a valid email address.");
         }
 
-        // Check if the email already exists in the database
-        if (isEmailTaken(email)) {
+        // Allow the current user's email during password change
+        if (userId != -1 && isEmailTaken(email, userId)) {
             throw new InvalidInputException("This email is already registered.");
         }
+    }
+
+    // Method to check if the email already exists in the database
+    private static boolean isEmailTaken(String email, int userId) throws InvalidInputException {
+        // Assumes DatabaseConnection class exists in your project
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "SELECT COUNT(*) FROM users WHERE email = ? AND id != ?";
+            PreparedStatement pst = conn.prepareStatement(query);
+            pst.setString(1, email);
+            pst.setInt(2, userId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException ex) {
+            throw new InvalidInputException("Database error: " + ex.getMessage());
+        }
+        return false;
     }
 
     // Validate if the field is not empty
@@ -63,33 +81,23 @@ public class InputValidator {
             throw new InvalidInputException("Full Name cannot be empty.");
         }
 
-        // Regular expression to allow only letters and spaces
         String nameRegex = "^[a-zA-Z\\s]+$";
         if (!fullName.matches(nameRegex)) {
             throw new InvalidInputException("Full Name can only contain letters and spaces.");
         }
     }
 
-    // Validate if a release date is valid (example: check that the date is not null)
+    // Validate if a release date is valid
     public static void validateReleaseDate(Date releaseDate) throws InvalidInputException {
         if (releaseDate == null) {
             throw new InvalidInputException("Please select a valid release date.");
         }
     }
 
-    // Method to check if the email already exists in the database
-    private static boolean isEmailTaken(String email) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT COUNT(*) FROM users WHERE email = ?";
-            PreparedStatement pst = conn.prepareStatement(query);
-            pst.setString(1, email);
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                return rs.getInt(1) > 0;  // If count > 0, email already exists
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException("Database error: " + ex.getMessage());
+    // Method to validate role (must be either "ADMIN" or "USER")
+    public static void validateRole(String role) throws InvalidInputException {
+        if (role == null || !(role.equals("ADMIN") || role.equals("USER"))) {
+            throw new InvalidInputException("Role must be either ADMIN or USER.");
         }
-        return false;
     }
 }

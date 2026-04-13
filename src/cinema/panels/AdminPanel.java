@@ -2,8 +2,8 @@
 package cinema.panels;
 
 // Import necessary libraries for GUI (Swing/AWT) and Database (SQL)
-import java.awt.*;
 import javax.swing.*;
+import java.awt.*;
 
 public class AdminPanel extends JFrame {
 
@@ -18,12 +18,12 @@ public class AdminPanel extends JFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         // Add tabs for each section of the admin panel
-        tabbedPane.addTab("Tickets", new TicketsPanel());
-        tabbedPane.addTab("Movies", new MoviesPanel());
+        //tabbedPane.addTab("Tickets", new TicketsPanel());
+        //tabbedPane.addTab("Movies", new MoviesPanel());
         tabbedPane.addTab("Users", new UsersPanel());
-        tabbedPane.addTab("Halls", new HallsPanel());
-        tabbedPane.addTab("Screenings", new ScreeningsPanel());
-        tabbedPane.addTab("Seats", new SeatsPanel());
+       //tabbedPane.addTab("Halls", new HallsPanel());
+        //tabbedPane.addTab("Screenings", new ScreeningsPanel());
+        //tabbedPane.addTab("Seats", new SeatsPanel());
 
         // Add the tabbedPane to the frame
         add(tabbedPane, BorderLayout.CENTER);  // Main content in the center
