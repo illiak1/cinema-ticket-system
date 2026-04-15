@@ -154,6 +154,21 @@ public class SeatSelectionPage extends JFrame {
 
         // Proceed if at least one seat is chosen
         if (!selectedIds.isEmpty()) {
+
+            // Final Seat confirmation prompt
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "You have selected " + selectedIds.size() + " seat(s).\nDo you want to proceed to checkout?",
+                    "Confirm Selection",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+
+            // If the user clicks "No" or closes the dialog, stop the redirection
+            if (choice != JOptionPane.YES_OPTION) {
+                return;
+            }
+
             double totalPrice = selectedIds.size() * getShowtimeDetails(screeningId).getPrice();
 
             // Open the confirmation page and pass all necessary booking data
