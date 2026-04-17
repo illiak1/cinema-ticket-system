@@ -27,7 +27,12 @@ public class AdminPanel extends JFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
         // Add a tab for managing users
         tabbedPane.addTab("Users", new UsersPanel());
-                // Add the tabbed pane to the center of the frame
+        tabbedPane.addTab("Tickets", new TicketsPanel());
+        tabbedPane.addTab("Movies", new MoviesPanel());
+        tabbedPane.addTab("Halls", new HallsPanel());
+        tabbedPane.addTab("Screenings", new ScreeningsPanel());
+        tabbedPane.addTab("Seats", new SeatsPanel());
+        // Add the tabbed pane to the center of the frame
         add(tabbedPane, BorderLayout.CENTER);
     }
 }
