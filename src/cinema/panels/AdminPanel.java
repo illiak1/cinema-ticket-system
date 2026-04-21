@@ -6,7 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * AdminPanel represents the main window for cinema administrators.
+ * Represents the main window for cinema administrators.
  * It contains tabs for managing various parts of the system (e.g., Users, Movies, Showtimes).
  */
 public class AdminPanel extends JFrame {
@@ -27,12 +27,7 @@ public class AdminPanel extends JFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
         // Add a tab for managing users
         tabbedPane.addTab("Users", new UsersPanel());
-        tabbedPane.addTab("Tickets", new TicketsPanel());
-        tabbedPane.addTab("Movies", new MoviesPanel());
-        tabbedPane.addTab("Halls", new HallsPanel());
-        tabbedPane.addTab("Screenings", new ScreeningsPanel());
-        tabbedPane.addTab("Seats", new SeatsPanel());
-        // Add the tabbed pane to the center of the frame
+                // Add the tabbed pane to the center of the frame
         add(tabbedPane, BorderLayout.CENTER);
     }
 }
