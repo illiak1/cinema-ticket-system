@@ -238,27 +238,27 @@ cd cinema-ticket-system
 
 ### 🔐 Login Screen
 
-![Login Screen](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/src/cinema/images/login.png)
+![Login Screen](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/interface_screenshots/login.png)
 
 ### 🏠 Movie Dashboard
 
-![Movie Dashboard](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/src/cinema/images/movie_dashboard.png)
+![Movie Dashboard](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/interface_screenshots/movie_dashboard.png)
 
 ### ⏰ Showtimes Screen
 
-![Showtimes Screen](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/src/cinema/images/showtimes.png)
+![Showtimes Screen](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/interface_screenshots/showtimes.png)
 
 ### 💺 Seat Selection Screen
 
-![Seat Selection Screen](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/src/cinema/images/seat_selection.png)
+![Seat Selection Screen](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/interface_screenshots/seat_selection.png)
 
 ### 🎟️ Booking Confirmation
 
-![Booking Confirmation](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/src/cinema/images/booking_confirmation.png)
+![Booking Confirmation](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/interface_screenshots/booking_confirmation.png)
 
 ### 🛠️ Admin Panel (Users Section)
 
-![Admin Panel](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/src/cinema/images/admin_panel_users.png)
+![Admin Panel](https://raw.githubusercontent.com/illiak1/cinema-ticket-system/main/interface_screenshots/admin_panel_users.png)
 
 ---
 
